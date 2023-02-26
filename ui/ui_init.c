@@ -56,15 +56,15 @@ static ui_context sUIcontext = {0};
 
 static const frame skUI[] =
 {
-    { kFrameRoot, "root", {0, 0, TEXT_WIDTH, TEXT_HEIGHT}, kBlack, kWhite, NULL, NULL },    // [0]
-    { kFrameBBox, "TopBar", {0, 0, 30, 2}, kRed, kWhite, TopBarEventProc, NULL },           // [1]
-    { kFrameBBox, "Settings", {4, 4, 0, 9}, kBlue, kCyan, SettingsEventProc, NULL },        // [2]
-    { kFrameBBox, "APRS", {4, 4, 0, 9}, kBlue, kCyan, APRSEventProc, NULL },                // [3]
-    { kFrameBBox, "PSK", {4, 4, 0, 9}, kBlue, kCyan, PSKEventProc, NULL },                  // [4]
-    { kFrameBBox, "Phone", {4, 4, 0, 9}, kBlue, kCyan, PhoneEventProc, NULL },              // [5]
-    { kFrameBBox, "Callsign", {4, 4, 0, 9}, kBlue, kYellow, CallsignEventProc, NULL },      // [6]
-    { kFrameBBox, "Calibration", {4, 4, 0, 9}, kBlue, kYellow, CalibrationEventProc, NULL },// [7]
-    { kFrameBBox, "Terminal", {4, 4, 0, 9}, kBlack, kGreen, TerminalEventProc, NULL },      // [8]
+    { kFrameRoot, "root", {0, 0, TEXT_WIDTH, TEXT_HEIGHT}, kBlack, kWhite, NULL, NULL },        // [0]
+    { kFrameBBox, "TopBar", {0, 0, 240, 16}, kRed, kWhite, TopBarEventProc, NULL },             // [1]
+    { kFrameBBox, "Settings", {32, 32, 64, 72}, kBlue, kCyan, SettingsEventProc, NULL },        // [2]
+    { kFrameBBox, "APRS", {32, 32, 0, 72}, kBlue, kCyan, APRSEventProc, NULL },                 // [3]
+    { kFrameBBox, "PSK", {32, 32, 0, 72}, kBlue, kCyan, PSKEventProc, NULL },                   // [4]
+    { kFrameBBox, "Phone", {32, 32, 0, 72}, kBlue, kCyan, PhoneEventProc, NULL },               // [5]
+    { kFrameBBox, "Callsign", {32, 32, 0, 72}, kBlue, kYellow, CallsignEventProc, NULL },       // [6]
+    { kFrameBBox, "Calibration", {32, 32, 0, 72}, kBlue, kYellow, CalibrationEventProc, NULL }, // [7]
+    { kFrameBBox, "Terminal", {32, 32, 0, 72}, kBlack, kGreen, TerminalEventProc, NULL },       // [8]
 };
 
 ui_context* InitUI(void)

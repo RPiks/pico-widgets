@@ -32,6 +32,7 @@ add_executable(pico-widgets-test
 )
 
 target_sources(pico-widgets-test PUBLIC
+        ${CMAKE_CURRENT_LIST_DIR}/debug/tftlogger.c
         ${CMAKE_CURRENT_LIST_DIR}/ui/ui_init.c
         ${CMAKE_CURRENT_LIST_DIR}/ui/ui_manage.c
         ${CMAKE_CURRENT_LIST_DIR}/widgets/widgets_utility.c
@@ -62,7 +63,8 @@ target_include_directories(pico-widgets-test PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}/pico-touchscr-sdk/touch
         ${CMAKE_CURRENT_LIST_DIR}/frame
         ${CMAKE_CURRENT_LIST_DIR}/ui
-        #${CMAKE_CURRENT_LIST_DIR}/widgets
+        ${CMAKE_CURRENT_LIST_DIR}/widgets
+        ${CMAKE_CURRENT_LIST_DIR}/debug
         ${CMAKE_CURRENT_LIST_DIR}
         ${CMAKE_CURRENT_LIST_DIR}/.. # for our common lwipopts or any other standard includes, if required
 )

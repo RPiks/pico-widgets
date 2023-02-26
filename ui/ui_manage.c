@@ -6,12 +6,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
 //
-//  ui_init.c - User interface initialization.
+//  ui_manage.c - User interface service functions.
 // 
 //
 //  DESCRIPTION
 //
-//      Implements functions of UI init.
+//      Implements functions of UI.
 //
 //  PLATFORM
 //      Hardware: Raspberry Pi Pico.
@@ -180,10 +180,10 @@ bool GetTouchData(ui_context *puic, int32_t *x, int32_t *y)
 /// @return True if is inside.
 bool IsInsideRect(const frame_rect *rct, int32_t x, int32_t y)
 {
-    if((x < (8 * rct->mTlx))
-    || (y < (8 * rct->mTly))
-    || (x > (8 * (rct->mTlx + rct->mWidth)))
-    || (y > (8 * (rct->mTly + rct->mHeight))))
+    if((x < rct->mTlx)
+    || (y < rct->mTly)
+    || (x > rct->mTlx + rct->mWidth)
+    || (y > rct->mTly + rct->mHeight))
     {
         return false;
     }

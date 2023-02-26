@@ -49,8 +49,8 @@
 #define UI_CONTEXT_H_
 
 #include <frame.h>
-#include <ili9341/ili9341.h>
-#include <touch/msp2807_touch.h>
+#include <ili9341.h>
+#include <msp2807_touch.h>
 
 #define MAX_UI_DEPTH    8
 

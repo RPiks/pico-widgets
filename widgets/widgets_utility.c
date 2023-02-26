@@ -4,17 +4,17 @@
 /// @param pscr The control structure.
 /// @param prct Text-mode rectangle in symbol coords.
 /// @param shft A shift in pixels (<0 means inside one).
-void DrawTextBBox(screen_control_t *pscr, const frame_rect *prct, int8_t shft)
+void DrawBBox(screen_control_t *pscr, const frame_rect *prct, int8_t shft)
 {
     ASSERT(pscr);
     ASSERT(prct);
-    ASSERT((prct->mTlx<<3) - shft >= 0);
-    ASSERT((prct->mTly<<3) - shft >= 0);
+    ASSERT(prct->mTlx - shft >= 0);
+    ASSERT(prct->mTly - shft >= 0);
 
-    const int tlx = (prct->mTlx<<3) - shft;
-    const int tly = (prct->mTly<<3) - shft;
-    const int w = (prct->mWidth<<3) + (shft<<1) - 1;
-    const int h = (prct->mHeight<<3)+ (shft<<1) - 1;
+    const int tlx = prct->mTlx - shft;
+    const int tly = prct->mTly - shft;
+    const int w = prct->mWidth + (shft<<1) - 1;
+    const int h = prct->mHeight+ (shft<<1) - 1;
 
     TftPutLine(pscr, tlx, tly, tlx+w, tly);
     TftPutLine(pscr, tlx+w, tly, tlx+w, tly+h);
@@ -54,5 +54,58 @@ void SetRegionColor(screen_control_t *pscr, const frame_rect *prct,
         for(int i = prct->mTlx; i < prct->mTlx + prct->mWidth; ++i)
         {
             TftPutColorAttr(pscr, i, j, paper, ink);
+        }
+}
+
+void AssignRect(frame_rect *pdst, uint16_t x, uint16_t y, 
+                uint16_t w, uint16_t h)
+{
+    ASSERT(pdst);
+    pdst->mTlx = x;
+    pdst->mTly = y;
+    pdst->mWidth = w;
+    pdst->mHeight= h;
+}
+
+int SelectTargetRect(const frame_rect *prects, int count, int x, int y)
+{
+    for(int i = 0; i < count; ++i)
+    {
+        if(IsInsideRect(prects + i, x, y))
+        {
+            return i;
+        }
+    }
+    return -1;
+}
+
+/// @brief Clear a widget using its bounding box.
+/// @param pwidget A widget.
+/// @param pscr The screen control structure.
+void ClearWidgetBBox(frame *pwidget, screen_control_t *pscr)
+{
+    ASSERT(pwidget);
+    
+    // tmp solution: inefficient.
+/*
+    for(int j = pwidget->mRegion.mTly; j < pwidget->mRegion.mTly + pwidget->mRegion.mHeight; ++j)
+    {
+        const int bitline = j * PIX_WIDTH;
+        for(int i = pwidget->mRegion.mTlx; i < pwidget->mRegion.mTlx + pwidget->mRegion.mWidth; ++i)
+        {
+            CLR_DATA_BIT(pscr->mpPixBuffer, i + bitline);
+        }
+    }
+*/
+    const int xl = pwidget->mRegion.mTlx >> 3;
+    const int xr = (pwidget->mRegion.mTlx + pwidget->mRegion.mWidth) >> 3;
+    const int yl = pwidget->mRegion.mTly >> 3;
+    const int yr = (pwidget->mRegion.mTly + pwidget->mRegion.mHeight) >> 3;
+    for(int j = yl; j <= yr; ++j)
+        for(int i = xl; i <= xr; ++i)
+        {
+            TftClearRect8(pscr, i, j);
+            uint8_t *pbox = pscr->mpColorBuffer + i + TEXT_WIDTH * j;
+            *pbox |= 1 << 6;        // Set for update.
         }
 }
