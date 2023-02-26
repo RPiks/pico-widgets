@@ -6,12 +6,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
 //
-//  ui_context.h - User interface context structure.
+//  ui_protos.h - User interface functions prototypes.
 // 
 //
 //  DESCRIPTION
 //
-//      Structure which integrates all necessary control structures to operate.
+//      Declares functions which do events processing.
 //
 //  PLATFORM
 //      Hardware: Raspberry Pi Pico.
@@ -19,7 +19,7 @@
 //
 //  REVISION HISTORY
 // 
-//      Rev 0.5   23 Feb 2023
+//      Rev 0.5   24 Feb 2023
 //  Initial release.
 //
 //  LICENCE
@@ -45,23 +45,30 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 ///////////////////////////////////////////////////////////////////////////////
-#ifndef UI_CONTEXT_H_
-#define UI_CONTEXT_H_
+#ifndef UI_PROTOS_H_
+#define UI_PROTOS_H_
 
 #include <frame.h>
-#include <ili9341/ili9341.h>
-#include <touch/msp2807_touch.h>
+#include "ui_context.h"
 
-#define MAX_UI_DEPTH    8
+ui_context* InitUI(void);
+ui_context* GetUI(void);
+const frame* GetUIItem(int n);
+void PushStdFrame(ui_context *pcntx, int ix);
+void PushCustomFrame(ui_context *pcntx, frame *pframe);
+void PopFrame(ui_context* pcntx);
+frame *GetActiveFrame(ui_context *pcntx);
+void UItick(ui_context *pcntx, int32_t sleep_interval);
+bool GetTouchData(ui_context *puic, int32_t *x, int32_t *y);
+bool IsInsideRect(const frame_rect *rct, int32_t x, int32_t y);
 
-typedef struct
-{
-    const frame* mpFrameStack[MAX_UI_DEPTH];
-    uint8_t mFrameActiveIX;
-
-    screen_control_t mScreenCtl;
-    touch_control_t mTouchCtl;
-    calibration_mat_t mTouchCalMat;
-} ui_context;
+int TopBarEventProc(frame *pF, frame_event fE, int x, int y, void *pctx);
+int SettingsEventProc(frame *pF, frame_event fE, int x, int y, void *pctx);
+int APRSEventProc(frame *pF, frame_event fE, int x, int y, void *pctx);
+int PSKEventProc(frame *pF, frame_event fE, int x, int y, void *pctx);
+int PhoneEventProc(frame *pF, frame_event fE, int x, int y, void *pctx);
+int CallsignEventProc(frame *pF, frame_event fE, int x, int y, void *pctx);
+int CalibrationEventProc(frame *pF, frame_event fE, int x, int y, void *pctx);
+int TerminalEventProc(frame *pF, frame_event fE, int x, int y, void *pctx);
 
 #endif

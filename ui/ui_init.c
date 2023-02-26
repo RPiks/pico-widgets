@@ -6,12 +6,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
 //
-//  ui_context.h - User interface context structure.
+//  ui_init.c - User interface initialization.
 // 
 //
 //  DESCRIPTION
 //
-//      Structure which integrates all necessary control structures to operate.
+//      Implements functions of UI init.
 //
 //  PLATFORM
 //      Hardware: Raspberry Pi Pico.
@@ -19,7 +19,7 @@
 //
 //  REVISION HISTORY
 // 
-//      Rev 0.5   23 Feb 2023
+//      Rev 0.5   24 Feb 2023
 //  Initial release.
 //
 //  LICENCE
@@ -45,23 +45,50 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 ///////////////////////////////////////////////////////////////////////////////
-#ifndef UI_CONTEXT_H_
-#define UI_CONTEXT_H_
+#ifndef UI_STRUCTURE_H_
+#define UI_STRUCTURE_H_
 
 #include <frame.h>
-#include <ili9341/ili9341.h>
-#include <touch/msp2807_touch.h>
+#include "ui_context.h"
+#include "ui_protos.h"
 
-#define MAX_UI_DEPTH    8
+static ui_context sUIcontext = {0};
 
-typedef struct
+static const frame skUI[] =
 {
-    const frame* mpFrameStack[MAX_UI_DEPTH];
-    uint8_t mFrameActiveIX;
+    { kFrameRoot, "root", {0, 0, TEXT_WIDTH, TEXT_HEIGHT}, kBlack, kWhite, NULL, NULL },    // [0]
+    { kFrameBBox, "TopBar", {0, 0, 30, 2}, kRed, kWhite, TopBarEventProc, NULL },           // [1]
+    { kFrameBBox, "Settings", {4, 4, 0, 9}, kBlue, kCyan, SettingsEventProc, NULL },        // [2]
+    { kFrameBBox, "APRS", {4, 4, 0, 9}, kBlue, kCyan, APRSEventProc, NULL },                // [3]
+    { kFrameBBox, "PSK", {4, 4, 0, 9}, kBlue, kCyan, PSKEventProc, NULL },                  // [4]
+    { kFrameBBox, "Phone", {4, 4, 0, 9}, kBlue, kCyan, PhoneEventProc, NULL },              // [5]
+    { kFrameBBox, "Callsign", {4, 4, 0, 9}, kBlue, kYellow, CallsignEventProc, NULL },      // [6]
+    { kFrameBBox, "Calibration", {4, 4, 0, 9}, kBlue, kYellow, CalibrationEventProc, NULL },// [7]
+    { kFrameBBox, "Terminal", {4, 4, 0, 9}, kBlack, kGreen, TerminalEventProc, NULL },      // [8]
+};
 
-    screen_control_t mScreenCtl;
-    touch_control_t mTouchCtl;
-    calibration_mat_t mTouchCalMat;
-} ui_context;
+ui_context* InitUI(void)
+{
+    PushStdFrame(&sUIcontext, 0);
+    PushStdFrame(&sUIcontext, 1);
+
+    return &sUIcontext;
+}
+
+ui_context* GetUI(void)
+{
+    return &sUIcontext;
+}
+
+void PushStdFrame(ui_context *pcntx, int ix)
+{
+    ASSERT(pcntx);
+    pcntx->mpFrameStack[pcntx->mFrameActiveIX++] = &skUI[ix];
+}
+
+const frame* GetUIItem(int n)
+{
+    return &skUI[n];
+}
 
 #endif

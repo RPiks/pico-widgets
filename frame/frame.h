@@ -8,6 +8,7 @@
 
 #include "frame_type.h"
 #include "frame_rect.h"
+#include "frame_event.h"
 
 #define ASSERT(x)   assert_(x)
 
@@ -18,16 +19,15 @@ struct frame
 
     const char *mpTitle;        // Title.
 
-    uint8_t mOrder;             // Order defines drawing seq & event reaction.
-
     frame_rect mRegion;         // Region of the whole frame, in blocks of 8x8.
     
     color_t mPaper, mInk;       // Color scheme of this frame.
 
-    int (*mpfEventProc)         // Ptr to touch processing
-    (frame *pF, int x, int y);  // function.
+    int (*mpfEventProc)         // Ptr to event processing
+    (frame *pF, frame_event fE, // function.
+    int x, int y, void *pcntx);
+
+    void *mpPayLoad;            // Custom objects associated with the frame.
 };
-
-
 
 #endif

@@ -49,7 +49,7 @@
 #include "pico/stdlib.h"
 
 #include <ui_context.h>
-//#include <ui_tick.h>
+#include <ui_protos.h>
 
 #define MHZ                     1000000L
 #define ADC_CLK_FREQ            (48 * MHZ)

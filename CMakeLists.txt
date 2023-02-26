@@ -32,7 +32,17 @@ add_executable(pico-widgets-test
 )
 
 target_sources(pico-widgets-test PUBLIC
-        #${CMAKE_CURRENT_LIST_DIR}/frame/frame.c
+        ${CMAKE_CURRENT_LIST_DIR}/ui/ui_init.c
+        ${CMAKE_CURRENT_LIST_DIR}/ui/ui_manage.c
+        ${CMAKE_CURRENT_LIST_DIR}/widgets/widgets_utility.c
+        ${CMAKE_CURRENT_LIST_DIR}/widgets/TopBarEventProc.c
+        ${CMAKE_CURRENT_LIST_DIR}/widgets/SettingsEventProc.c
+        ${CMAKE_CURRENT_LIST_DIR}/widgets/APRSEventProc.c
+        ${CMAKE_CURRENT_LIST_DIR}/widgets/PSKEventProc.c
+        ${CMAKE_CURRENT_LIST_DIR}/widgets/PhoneEventProc.c
+        ${CMAKE_CURRENT_LIST_DIR}/widgets/CallsignEventProc.c
+        ${CMAKE_CURRENT_LIST_DIR}/widgets/CalibrationEventProc.c
+        ${CMAKE_CURRENT_LIST_DIR}/widgets/TerminalEventProc.c
         ${CMAKE_CURRENT_LIST_DIR}/ISR.c
         ${CMAKE_CURRENT_LIST_DIR}/test.c
         )

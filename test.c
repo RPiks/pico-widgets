@@ -6,13 +6,14 @@
 #include "ISR.h"
 
 #include <ui_context.h>
-
-ui_context gUIcontext;
+#include <ui_protos.h>
 
 int main()
 {
-    screen_control_t *pScrCtl = &gUIcontext.mScreenCtl;
-    touch_control_t *pTouchCtl= &gUIcontext.mTouchCtl;
+    ui_context *pUI = InitUI();
+
+    screen_control_t *pScrCtl = &pUI->mScreenCtl;
+    touch_control_t *pTouchCtl= &pUI->mTouchCtl;
 
     static ili9341_config_t ili9341_hw_config;
     pScrCtl->mpHWConfig = &ili9341_hw_config;
@@ -47,14 +48,14 @@ int main()
         118, 12
     };
 
-    CalculateCalibrationMat(refpoints, smplpoints, 4, &gUIcontext.mTouchCalMat);
+    CalculateCalibrationMat(refpoints, smplpoints, 4, &pUI->mTouchCalMat);
 
     //TftPrintf(pScrCtl, 3, 40, kBlack, kCyan, "Touch screen calibration passed.\n");
     //TftFullScreenSelectiveWrite(pScrCtl, 10000);
 
-    //gUIcontext.mpRoot = CreateUI();
-    //gUIcontext.mpRoot->mpNext = NULL;
-    //ActivateChildAtom(gUIcontext.mpRoot, 0);
+    //gUIcontext.mFrameStack = CreateUI();
+    //gUIcontext.mFrameStack->mpNext = NULL;
+    //ActivateChildAtom(gUIcontext.mFrameStack, 0);
     //TftPrintf(pScrCtl, 3, 40, kBlack, kYellow, "UI hierarchy is allocated.\n");
     //TftFullScreenSelectiveWrite(pScrCtl, 10000);
 
@@ -63,7 +64,8 @@ int main()
 
     InitADC();
     
-    //TopBarDraw(gUIcontext.mpRoot->mpChildren, pScrCtl);
+
+    //TopBarDraw(gUIcontext.mFrameStack->mpChildren, pScrCtl);
     //TftFullScreenSelectiveWrite(pScrCtl, 10000);
 
     int loop_tick = 0;
