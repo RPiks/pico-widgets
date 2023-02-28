@@ -100,7 +100,7 @@ void DrawFrame(ui_context *pcntx, frame *pkframe)
 
 /// @brief Measures a current time.
 /// @return A count of 1 us ticks from start.
-static inline uint64_t sGetTime(void)
+uint64_t GetTime(void)
 {
     const uint32_t ktlo = timer_hw->timelr;
     const uint32_t kthi = timer_hw->timehr;
@@ -113,7 +113,7 @@ void UItick(ui_context *pcntx, int32_t sleep_interval)
     ASSERT(pcntx);
     
     static uint64_t sLastTm = 0;
-    const uint64_t ktm64_now = sGetTime();
+    const uint64_t ktm64_now = GetTime();
     
     /* Check whether enough time has passed. */
     if(ktm64_now - sleep_interval < sLastTm)
@@ -132,7 +132,7 @@ void UItick(ui_context *pcntx, int32_t sleep_interval)
 
         if(pfActive != spfActiveM1)
         {
-            DebugPrintf("%s\n", pfActive->mpTitle);
+            //DebugPrintf("%s\n", pfActive->mpTitle);
             pfActive->mpfEventProc(pfActive, kEventDraw, 0, 0, pcntx);
 
             sLastTm += 500000L;

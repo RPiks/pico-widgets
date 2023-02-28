@@ -11,7 +11,14 @@ typedef struct
     uint16_t y;
 } point2d_t;
 
-static const int8_t skCrook[][2] =  {   {1, -1}, {1, 2},    {2, -2}, {2, 3},    {2, -1}, {2, 2} };
+typedef struct
+{
+    uint8_t flags;
+    uint64_t tm_last;
+} terminal_context_t;
+
+static const int8_t skCrook[][2] =  {   {1, -1}, {1, 2},    {2, -2}, {2, 3},    {2, -1}, {2, 2}
+                                    };
 
 static const uint8_t skKeys[][4] =  {   {2, 0, 18, 16},     {22, 0, 38, 16},    {42, 0, 58, 16},    {62, 0, 78, 16}, 
                                         {82, 0, 98, 16},    {102, 0, 118, 16},  {122, 0, 138, 16},  {142, 0, 158, 16}, 
@@ -36,7 +43,7 @@ static const char skKeysLow[] = "1234567890-+qwertyuiopasdfghjkl:\"^zxcvbnm,./  
 
 void KeyboardDraw(frame *pkbd, screen_control_t *pscr, 
                   color_t paper, color_t ink, int mode);
-int LocateKeyTouch(int x, int y, int mode);
+int LocateKeyTouch(int x, int y);
 void Key16x16Draw(screen_control_t *pscr, point2d_t tl);
 void BrickDraw(screen_control_t *pscr, point2d_t tl, point2d_t br, int over);
 
@@ -45,26 +52,50 @@ int TerminalEventProc(frame *pF, frame_event fE, int x, int y, void *pctx)
     ASSERT(pF);
     ASSERT(pctx);
 
+    static terminal_context_t sTermCtx = { 0 };
+
     ui_context *pui = pctx;
+
+    //terminal_context_t *sTermCtx = pF->mpPayLoad;
 
     switch (fE)
     {
         case kEventDraw:
-        KeyboardDraw(pF, &pui->mScreenCtl, 0, 4, 1);
+        KeyboardDraw(pF, &pui->mScreenCtl, 0, 4, sTermCtx.flags&1);
         break;
 
         case kEventClickInside:
         {
-            const int i = LocateKeyTouch(x, y, 1);
-            //if(i != -1)
+            const int i = LocateKeyTouch(x, y);
+            if(-1 == i)
             {
-                DebugPrintf("%c ", skKeysCap[i]);
+                break;
             }
+            
+            const uint64_t tm_press = GetTime();
+            if(tm_press - sTermCtx.tm_last < 200000L)
+            {
+                break;
+            }
+            
+            sTermCtx.tm_last = tm_press;
+
+            if('^' == skKeysCap[i])
+            {
+                sTermCtx.flags ^= 0b1;
+                KeyboardDraw(pF, &pui->mScreenCtl, 0, 4, sTermCtx.flags&1);
+            }
+            else
+            {
+                DebugPrintf("%c", (sTermCtx.flags&1) ? skKeysCap[i] : skKeysLow[i]);
+            }
+            
             gpio_put(PICO_DEFAULT_LED_PIN, 1);
         }
         break;
 
         case kEventClickOutside:
+        pF->mpPayLoad = NULL;
         PopFrame(pctx);
         ClearWidgetBBox(pF, &pui->mScreenCtl);
         gpio_put(PICO_DEFAULT_LED_PIN, 0);
@@ -103,7 +134,9 @@ void KeyboardDraw(frame *pkbd, screen_control_t *pscr,
         point2d_t pt1 = { skKeys[i][2], 220 + skKeys[i][3] };
         BrickDraw(pscr, pt0, pt1, 1);
 
-        char buf[2] = { skKeysCap[i], 0 };
+        char buf[2];
+        buf[0] = mode ? skKeysCap[i] : skKeysLow[i];
+        buf[1] = 0x00;
         TftPutTextLabel(pscr, buf, pt0.x + 4, pt0.y + 5, 0);
     }
 
@@ -158,7 +191,7 @@ void BrickDraw(screen_control_t *pscr, point2d_t tl, point2d_t br, int over)
     }
 }
 
-int LocateKeyTouch(int x, int y, int mode)
+int LocateKeyTouch(int x, int y)
 {
     for(int i = 0; i < _countof(skKeys); ++i)
     {

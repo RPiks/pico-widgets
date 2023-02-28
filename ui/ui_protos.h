@@ -61,6 +61,7 @@ frame *GetActiveFrame(ui_context *pcntx);
 void UItick(ui_context *pcntx, int32_t sleep_interval);
 bool GetTouchData(ui_context *puic, int32_t *x, int32_t *y);
 bool IsInsideRect(const frame_rect *rct, int32_t x, int32_t y);
+uint64_t GetTime(void);
 
 int TopBarEventProc(frame *pF, frame_event fE, int x, int y, void *pctx);
 int SettingsEventProc(frame *pF, frame_event fE, int x, int y, void *pctx);

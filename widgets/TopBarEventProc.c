@@ -90,7 +90,7 @@ void TopBarClickInside(frame *pF, int x, int y, ui_context *pctx)
 {
     const int ix = SelectTargetRect(sTopBarActivationRect, 
                                     _countof(sTopBarActivationRect), x, y);
-    DebugPrintf("x:%d y:%d IX click: %d  \n", x, y, ix);
+    //DebugPrintf("x:%d y:%d IX click: %d  \n", x, y, ix);
     
     switch (ix)
     {

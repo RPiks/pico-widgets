@@ -86,13 +86,22 @@ int SelectTargetRect(const frame_rect *prects, int count, int x, int y)
 void ClearWidgetBBox(frame *pwidget, screen_control_t *pscr)
 {
     ASSERT(pwidget);
-
+/*
+    for(int j = pwidget->mRegion.mTly; j < pwidget->mRegion.mTly + pwidget->mRegion.mHeight; ++j)
+    {
+        const int bitline = j * PIX_WIDTH;
+        for(int i = pwidget->mRegion.mTlx; i < pwidget->mRegion.mTlx + pwidget->mRegion.mWidth; ++i)
+        {
+            CLR_DATA_BIT(pscr->mpPixBuffer, i + bitline);
+        }
+    }
+*/
     const int xl = pwidget->mRegion.mTlx >> 3;
     const int xr = (pwidget->mRegion.mTlx + pwidget->mRegion.mWidth) >> 3;
     const int yl = pwidget->mRegion.mTly >> 3;
     const int yr = (pwidget->mRegion.mTly + pwidget->mRegion.mHeight) >> 3;
-    for(int j = yl; j <= yr; ++j)
-        for(int i = xl; i <= xr; ++i)
+    for(int j = yl; j < yr; ++j)
+        for(int i = xl; i < xr; ++i)
         {
             TftClearRect8(pscr, i, j);
             uint8_t *pbox = pscr->mpColorBuffer + i + TEXT_WIDTH * j;
