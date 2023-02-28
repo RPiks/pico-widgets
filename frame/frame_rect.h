@@ -3,7 +3,6 @@
 
 #include <stdint.h>
 
-/// @brief Struct which defines a rectangle in text mode.
 typedef struct
 {
     uint16_t mTlx, mTly;

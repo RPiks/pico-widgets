@@ -14,25 +14,19 @@ int main()
 
     screen_control_t *pScrCtl = &pUI->mScreenCtl;
     touch_control_t *pTouchCtl= &pUI->mTouchCtl;
-
-    static ili9341_config_t ili9341_hw_config;
+    
+    ili9341_config_t ili9341_hw_config;
     pScrCtl->mpHWConfig = &ili9341_hw_config;
-
     ILI9341_Init(pScrCtl->mpHWConfig, spi0, 90 * MHz, 4, 5, 6, 7, 8, 9);
 
     TftClearScreenBuffer(pScrCtl, kBlack, kYellow);
-    pScrCtl->mCursorY = 20;
-    pScrCtl->mCursorX = 0;
-    //TftPrintf(pScrCtl, 3, 40, kBlack, kMagenta, "Pix Comm v.0.15 %s is starting\n", __TIME__);
-    //TftFullScreenWrite(pScrCtl);
+    TftSetCursor(pScrCtl, 0, 20);
 
     touch_hwconfig_t touch_hwc;
     TouchInitHW(&touch_hwc, spi1, 1 * MHz, 12, 13, 10, 11, 15);
     TouchInitCtl(pTouchCtl, &touch_hwc, 1000, 50000, 5);
 
-    //TftPrintf(pScrCtl, 3, 40, kBlack, kRed, "Touch screen init passed.\n");
-    //TftFullScreenSelectiveWrite(pScrCtl, 10000);
-
+    /* Set reference points of the screen as its corners. */
     const int16_t refpoints[] =
     {
         0,   0,
@@ -40,45 +34,26 @@ int main()
         0,   320,
         240, 320
     };
+    /* Set sampled points of the screen as outputs of touchscreen when 
+       reference points had been pressed. */
     const int16_t smplpoints[] =
     {
-        10,  120,
-        119, 119,
-        9,   11,
-        118, 12
+        10,  120,   //  0,   0.
+        119, 119,   //  240, 0.
+        9,   11,    //  ..
+        118, 12     //  ..
     };
 
     CalculateCalibrationMat(refpoints, smplpoints, 4, &pUI->mTouchCalMat);
-
-    //TftPrintf(pScrCtl, 3, 40, kBlack, kCyan, "Touch screen calibration passed.\n");
-    //TftFullScreenSelectiveWrite(pScrCtl, 10000);
-
-    //gUIcontext.mFrameStack = CreateUI();
-    //gUIcontext.mFrameStack->mpNext = NULL;
-    //ActivateChildAtom(gUIcontext.mFrameStack, 0);
-    //TftPrintf(pScrCtl, 3, 40, kBlack, kYellow, "UI hierarchy is allocated.\n");
-    //TftFullScreenSelectiveWrite(pScrCtl, 10000);
 
     gpio_init(PICO_DEFAULT_LED_PIN);
     gpio_set_dir(PICO_DEFAULT_LED_PIN, GPIO_OUT);
 
     InitADC();
-    
-
-    //TopBarDraw(gUIcontext.mFrameStack->mpChildren, pScrCtl);
-    //TftFullScreenSelectiveWrite(pScrCtl, 10000);
-
-    int loop_tick = 0;
-    for(;;)
+   
+    for(int loop_tick = 0;;++loop_tick)
     {
-        tight_loop_contents();
-        
-        ++loop_tick;
-
-        if(((1<<16) - 1) == (loop_tick & ((1<<16) - 1)))
-        {
- 
-        }
+        tight_loop_contents();       
 
         if(((1<<12) - 1) == (loop_tick & ((1<<12) - 1)))
         {

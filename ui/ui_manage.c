@@ -132,6 +132,10 @@ void UItick(ui_context *pcntx, int32_t sleep_interval)
         if(pfActive != spfActiveM1)
         {
             pfActive->mpfEventProc(pfActive, kEventDraw, 0, 0, pcntx);
+
+            sLastTm += 500000L;
+            spfActiveM1 = pfActive;
+            return;
         }
         spfActiveM1 = pfActive;
     }

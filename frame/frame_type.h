@@ -5,6 +5,7 @@ typedef enum
     kFrameRoot       =  0,
     kFrameBBox       =  1,
     kFrameTransparent=  2,
-    kFrameStub       =  3
-    
+    kFrameStub       =  3,
+    kFramePersistent =  4
+
 } frame_type;

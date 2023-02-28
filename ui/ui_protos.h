@@ -52,7 +52,7 @@
 #include "ui_context.h"
 
 ui_context* InitUI(void);
-ui_context* GetUI(void);
+ui_context* GetUIContext(void);
 const frame* GetUIItem(int n);
 void PushStdFrame(ui_context *pcntx, int ix);
 void PushCustomFrame(ui_context *pcntx, frame *pframe);

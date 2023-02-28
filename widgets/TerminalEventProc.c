@@ -5,8 +5,40 @@
 
 #include <tftlogger.h>
 
+typedef struct
+{
+    uint16_t x;
+    uint16_t y;
+} point2d_t;
+
+static const int8_t skCrook[][2] =  {   {1, -1}, {1, 2},    {2, -2}, {2, 3},    {2, -1}, {2, 2} };
+
+static const uint8_t skKeys[][4] =  {   {2, 0, 18, 16},     {22, 0, 38, 16},    {42, 0, 58, 16},    {62, 0, 78, 16}, 
+                                        {82, 0, 98, 16},    {102, 0, 118, 16},  {122, 0, 138, 16},  {142, 0, 158, 16}, 
+                                        {162, 0, 178, 16},  {182, 0, 198, 16},  {202, 0, 218, 16},  {222, 0, 238, 16}, 
+                                        {2, 20, 18, 36},    {22, 20, 38, 36},   {42, 20, 58, 36},   {62, 20, 78, 36}, 
+                                        {82, 20, 98, 36},   {102, 20, 118, 36}, {122, 20, 138, 36}, {142, 20, 158, 36}, 
+                                        {162, 20, 178, 36}, {182, 20, 198, 36}, {2, 40, 18, 56}, 
+                                        {22, 40, 38, 56},   {42, 40, 58, 56},   {62, 40, 78, 56},   {82, 40, 98, 56}, 
+                                        {102, 40, 118, 56}, {122, 40, 138, 56}, {142, 40, 158, 56}, {162, 40, 178, 56}, 
+                                        {182, 40, 198, 56}, {202, 40, 218, 56}, {2, 60, 18, 76},    {22, 60, 38, 76}, 
+                                        {42, 60, 58, 76},   {62, 60, 78, 76},   {82, 60, 98, 76},   {102, 60, 118, 76}, 
+                                        {122, 60, 138, 76}, {142, 60, 158, 76}, {162, 60, 178, 76}, {182, 60, 198, 76}, 
+                                        {202, 60, 218, 76},
+
+                                        {202, 20, 238, 36}, // BAK
+                                        {222, 40, 238, 76}, // Enter
+                                        {62, 80, 178, 98}   // Space
+                                    };
+
+static const char skKeysCap[] = "1234567890-+QWERTYUIOPASDFGHJKL:\"^ZXCVBNM,./   ";
+static const char skKeysLow[] = "1234567890-+qwertyuiopasdfghjkl:\"^zxcvbnm,./   ";
+
 void KeyboardDraw(frame *pkbd, screen_control_t *pscr, 
                   color_t paper, color_t ink, int mode);
+int LocateKeyTouch(int x, int y, int mode);
+void Key16x16Draw(screen_control_t *pscr, point2d_t tl);
+void BrickDraw(screen_control_t *pscr, point2d_t tl, point2d_t br, int over);
 
 int TerminalEventProc(frame *pF, frame_event fE, int x, int y, void *pctx)
 {
@@ -19,12 +51,17 @@ int TerminalEventProc(frame *pF, frame_event fE, int x, int y, void *pctx)
     {
         case kEventDraw:
         KeyboardDraw(pF, &pui->mScreenCtl, 0, 4, 1);
-        //SettingsListDraw(pF, pctx);
         break;
 
         case kEventClickInside:
-        gpio_put(PICO_DEFAULT_LED_PIN, 1);
-        
+        {
+            const int i = LocateKeyTouch(x, y, 1);
+            //if(i != -1)
+            {
+                DebugPrintf("%c ", skKeysCap[i]);
+            }
+            gpio_put(PICO_DEFAULT_LED_PIN, 1);
+        }
         break;
 
         case kEventClickOutside:
@@ -49,18 +86,6 @@ int TerminalEventProc(frame *pF, frame_event fE, int x, int y, void *pctx)
     return 0;
 }
 
-typedef struct
-{
-    uint16_t x;
-    uint16_t y;
-} point2d_t;
-static const char skKeysCapital[][13] = {"1234567890-+","QWERTYUIOP\x08","ASDFGHJKL:\"","^ZXCVBNM,./","\x0b/ :"};
-static const char skKeysLowerCase[][13] = {"1234567890-+","qwertyuiop\x08","asdfghjkl\x0d\x0b","zxcvbnm,./","\x0b/ :"};
-static const point2d_t skKeyBBTopLefts[] = { {2, 220}, {2, 240}, {2, 260}, {2, 280}, {22, 300} };
-
-void Key16x16Draw(screen_control_t *pscr, point2d_t tl);
-void BrickDraw(screen_control_t *pscr, point2d_t tl, point2d_t br, int over);
-
 void KeyboardDraw(frame *pkbd, screen_control_t *pscr, 
                   color_t paper, color_t ink, int mode)
 {
@@ -72,54 +97,38 @@ void KeyboardDraw(frame *pkbd, screen_control_t *pscr,
             TftPutColorAttr(pscr, i, j, paper, ink);
         }
 
-    char buf[2] = {0};
-    for(int j = 0; j < 4; ++j)
+    for(int i = 0; i < _countof(skKeys); ++i)
     {
-        const int len = strlen(skKeysCapital[j]);
-        point2d_t pt = skKeyBBTopLefts[j];
-        point2d_t pt2 = pt;
-        pt2.x += 16; pt2.y += 16;
-        for(int i = 0; i < len; ++i)
-        {
-            BrickDraw(pscr, pt, pt2, 1);
-            buf[0] = mode ? skKeysCapital[j][i]
-                          : skKeysLowerCase[j][i];
-            TftPutTextLabel(pscr, buf, pt.x + 4, pt.y + 5, 0);
-            pt.x += 20; pt2.x += 20;
-        }
+        point2d_t pt0 = { skKeys[i][0], 220 + skKeys[i][1] };
+        point2d_t pt1 = { skKeys[i][2], 220 + skKeys[i][3] };
+        BrickDraw(pscr, pt0, pt1, 1);
+
+        char buf[2] = { skKeysCap[i], 0 };
+        TftPutTextLabel(pscr, buf, pt0.x + 4, pt0.y + 5, 0);
     }
 
-    point2d_t pt = skKeyBBTopLefts[1];
-    pt.x += 20 * 10; point2d_t pt2 = pt;
-    pt2.x += 20 + 16; pt2.y += 16;
-    BrickDraw(pscr, pt, pt2, 1);   // Backspace.
-    TftPutTextLabel(pscr, "BAK", pt.x + 6, pt.y + 5, 0);
-
-    /* Enter key. */
-    pt = skKeyBBTopLefts[2];
-    pt.x += 20 * 11; pt2 = pt;
-    pt2.x += 16; pt2.y += 36;
-    BrickDraw(pscr, pt, pt2, 1);   // Enter.
+    {   // Backspace
+        point2d_t pt0 = { skKeys[_countof(skKeys)-3][0], 
+                        220 + skKeys[_countof(skKeys)-3][1] };
+        TftPutTextLabel(pscr, "BSP", pt0.x + 4, pt0.y + 5, 0);
+    }
     
-    pt2.x -= 3; pt2.y -= 4;
-    pt = pt2; pt.x -= 8; pt.y -= 2;
-    BrickDraw(pscr, pt, pt2, 0);
-    CLR_DATA_BIT(pscr->mpPixBuffer, pt.x + 1 + (pt.y - 1) * PIX_WIDTH);
-    CLR_DATA_BIT(pscr->mpPixBuffer, pt.x + 1 + (pt.y + 2) * PIX_WIDTH);
-    CLR_DATA_BIT(pscr->mpPixBuffer, pt.x + 2 + (pt.y - 2) * PIX_WIDTH);
-    CLR_DATA_BIT(pscr->mpPixBuffer, pt.x + 2 + (pt.y + 3) * PIX_WIDTH);
-    CLR_DATA_BIT(pscr->mpPixBuffer, pt.x + 2 + (pt.y - 1) * PIX_WIDTH);
-    CLR_DATA_BIT(pscr->mpPixBuffer, pt.x + 2 + (pt.y + 2) * PIX_WIDTH);
+    {   // Enter
+        point2d_t pt0 = { 227, 290 };
+        point2d_t pt1 = { 235, 292 };
+        BrickDraw(pscr, pt0, pt1, 0);
+        for(int i = 0; i < 6; ++i)
+        {
+            CLR_DATA_BIT(pscr->mpPixBuffer, pt0.x + skCrook[i][0] 
+                        + (pt0.y + skCrook[i][1]) * PIX_WIDTH);
+        }
 
-    pt = pt2;
-    pt.x -= 2; pt.y -= 22;
-    BrickDraw(pscr, pt, pt2, 0);
+        pt0 = pt1;
+        pt0.x -= 2; pt0.y -= 22;
+        BrickDraw(pscr, pt0, pt1, 0);
+    }
 
-    /* Space brick. */
-    pt = skKeyBBTopLefts[4];
-    pt.x += 20 * 2; pt2 = pt;
-    pt2.x += 20 * 6 - 4; pt2.y += 18;
-    BrickDraw(pscr, pt, pt2, 1);
+    return;
 }
 
 void Key16x16Draw(screen_control_t *pscr, point2d_t tl)
@@ -147,4 +156,25 @@ void BrickDraw(screen_control_t *pscr, point2d_t tl, point2d_t br, int over)
             }
         }
     }
+}
+
+int LocateKeyTouch(int x, int y, int mode)
+{
+    for(int i = 0; i < _countof(skKeys); ++i)
+    {
+        const frame_rect rct =
+        {
+            skKeys[i][0],
+            220 + skKeys[i][1],
+            skKeys[i][2] - skKeys[i][0],
+            skKeys[i][3] - skKeys[i][1]
+        };
+
+        if(IsInsideRect(&rct, x, y))
+        {
+            return i;
+        }
+    }
+
+    return -1;
 }

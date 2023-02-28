@@ -75,7 +75,7 @@ ui_context* InitUI(void)
     return &sUIcontext;
 }
 
-ui_context* GetUI(void)
+ui_context* GetUIContext(void)
 {
     return &sUIcontext;
 }

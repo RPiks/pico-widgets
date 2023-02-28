@@ -4,7 +4,7 @@ void DebugPrintf(const char* str, ...)
 {
     static int seq = 0;
 
-    screen_control_t *pscr = &GetUI()->mScreenCtl;
+    screen_control_t *pscr = &GetUIContext()->mScreenCtl;
 
     if(!seq)
     {

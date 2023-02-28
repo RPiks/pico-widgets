@@ -54,7 +54,7 @@ void __not_in_flash_func (ADCrxISR)(void)
         const int32_t val = adc_fifo_get();
     }
 
-    UItick(GetUI(), 20000L);    /* Call UI service [20 ms events proc.] */
+    UItick(GetUIContext(), 20000L);    /* Call UI service [20 ms events proc.] */
 }
 
 void InitADC(void)

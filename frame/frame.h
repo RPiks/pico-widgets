@@ -27,7 +27,7 @@ struct frame
     (frame *pF, frame_event fE, // function.
     int x, int y, void *pcntx);
 
-    void *mpPayLoad;            // Custom objects associated with the frame.
+    void *mpPayLoad;            // Custom data/func associated with the frame.
 };
 
 #endif

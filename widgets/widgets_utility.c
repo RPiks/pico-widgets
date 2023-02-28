@@ -61,6 +61,7 @@ void AssignRect(frame_rect *pdst, uint16_t x, uint16_t y,
                 uint16_t w, uint16_t h)
 {
     ASSERT(pdst);
+
     pdst->mTlx = x;
     pdst->mTly = y;
     pdst->mWidth = w;
@@ -85,18 +86,7 @@ int SelectTargetRect(const frame_rect *prects, int count, int x, int y)
 void ClearWidgetBBox(frame *pwidget, screen_control_t *pscr)
 {
     ASSERT(pwidget);
-    
-    // tmp solution: inefficient.
-/*
-    for(int j = pwidget->mRegion.mTly; j < pwidget->mRegion.mTly + pwidget->mRegion.mHeight; ++j)
-    {
-        const int bitline = j * PIX_WIDTH;
-        for(int i = pwidget->mRegion.mTlx; i < pwidget->mRegion.mTlx + pwidget->mRegion.mWidth; ++i)
-        {
-            CLR_DATA_BIT(pscr->mpPixBuffer, i + bitline);
-        }
-    }
-*/
+
     const int xl = pwidget->mRegion.mTlx >> 3;
     const int xr = (pwidget->mRegion.mTlx + pwidget->mRegion.mWidth) >> 3;
     const int yl = pwidget->mRegion.mTly >> 3;
