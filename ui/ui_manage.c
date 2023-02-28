@@ -54,6 +54,8 @@
 #include <ili9341.h>
 #include <msp2807_touch.h>
 
+#include <tftlogger.h>
+
 void PopFrame(ui_context* pcntx)
 {
     ASSERT(pcntx);
@@ -120,7 +122,6 @@ void UItick(ui_context *pcntx, int32_t sleep_interval)
     }
     sLastTm = ktm64_now;
 
-    
     frame *pfActive = GetActiveFrame(pcntx);
     {
         static frame *spfActiveM1 = NULL;
@@ -131,6 +132,7 @@ void UItick(ui_context *pcntx, int32_t sleep_interval)
 
         if(pfActive != spfActiveM1)
         {
+            DebugPrintf("%s\n", pfActive->mpTitle);
             pfActive->mpfEventProc(pfActive, kEventDraw, 0, 0, pcntx);
 
             sLastTm += 500000L;

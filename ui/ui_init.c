@@ -64,7 +64,7 @@ static const frame skUI[] =
     { kFrameBBox, "Phone", {32, 32, 0, 72}, kBlue, kCyan, PhoneEventProc, NULL },               // [5]
     { kFrameBBox, "Callsign", {32, 32, 0, 72}, kBlue, kYellow, CallsignEventProc, NULL },       // [6]
     { kFrameBBox, "Calibration", {32, 32, 0, 72}, kBlue, kYellow, CalibrationEventProc, NULL }, // [7]
-    { kFrameBBox, "Terminal", {32, 32, 0, 72}, kBlack, kGreen, TerminalEventProc, NULL },       // [8]
+    { kFrameBBox, "Terminal", {0, 32, 240, 320-32}, kBlack, kGreen, TerminalEventProc, NULL },  // [8]
 };
 
 ui_context* InitUI(void)

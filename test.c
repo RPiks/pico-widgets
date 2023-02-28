@@ -51,11 +51,11 @@ int main()
 
     InitADC();
    
-    for(int loop_tick = 0;;++loop_tick)
+    for(int tick = 0;;++tick)
     {
         tight_loop_contents();       
 
-        if(((1<<12) - 1) == (loop_tick & ((1<<12) - 1)))
+        if(((1<<12) - 1) == (tick & ((1<<12) - 1)))
         {
             TftFullScreenSelectiveWrite(pScrCtl, 1);
         }
