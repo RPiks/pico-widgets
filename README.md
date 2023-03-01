@@ -16,7 +16,12 @@ It is included.
 1. Install Raspberry Pi Pico SDK. Configure environment variables. Test
 whether it is built successfully.
 
-2. git clone this repository. cd pico-widgets ; ./build.sh
+2. git clone this repository. 
+cd pico-widgets
+git submodule init
+git submodule update
+./build.sh
+
 Check whether output file ./build/pico-widgets.uf2 appears.
 
 3. Assemble the test board using pin connection information provided in test.c file of https://github.com/RPiks/pico-touchscr-sdk
