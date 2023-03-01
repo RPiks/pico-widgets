@@ -17,10 +17,10 @@ It is included.
 whether it is built successfully.
 
 2. git clone this repository. 
-cd pico-widgets
-git submodule init
-git submodule update
-./build.sh
+- cd pico-widgets 
+- git submodule init 
+- git submodule update
+- ./build.sh
 
 Check whether output file ./build/pico-widgets.uf2 appears.
 
