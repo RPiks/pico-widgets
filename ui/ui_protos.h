@@ -58,7 +58,7 @@ void PushStdFrame(ui_context *pcntx, int ix);
 void PushCustomFrame(ui_context *pcntx, frame *pframe);
 void PopFrame(ui_context* pcntx);
 frame *GetActiveFrame(ui_context *pcntx);
-void UItick(ui_context *pcntx, int32_t sleep_interval);
+void UItick(ui_context *pcntx);
 bool GetTouchData(ui_context *puic, int32_t *x, int32_t *y);
 bool IsInsideRect(const frame_rect *rct, int32_t x, int32_t y);
 uint64_t GetTime(void);

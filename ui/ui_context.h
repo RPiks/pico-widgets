@@ -62,6 +62,11 @@ typedef struct
     screen_control_t mScreenCtl;
     touch_control_t mTouchCtl;
     calibration_mat_t mTouchCalMat;
+    
+    int32_t mLastX, mLastY;
+    volatile uint64_t mLastTouchTm;
+    volatile uint64_t mLastReleaseTm;
+    
 } ui_context;
 
 #endif

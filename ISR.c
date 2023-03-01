@@ -11,7 +11,7 @@
 //
 //  DESCRIPTION
 //
-//      Implements ADC initialization as well as ADC ISR with UI tick call.
+//      Implements an 1 kHz oscillator in order to process the data.
 //
 //  PLATFORM
 //      Hardware: Raspberry Pi Pico.
@@ -47,36 +47,34 @@
 ///////////////////////////////////////////////////////////////////////////////
 #include "ISR.h"
 
-void __not_in_flash_func (ADCrxISR)(void)
+static uint64_t sFutureTm;
+
+/// @brief 1 kHz oscillator.
+void __not_in_flash_func (tmISR)(void)
 {
-    while(!adc_fifo_is_empty())
+    static int32_t sTick = 0;
+    gpio_put(PICO_DEFAULT_LED_PIN, (++sTick)&1);
+
+    if(0b11 == (sTick & 0b11))
     {
-        const int32_t val = adc_fifo_get();
+        UItick(GetUIContext());
     }
 
-    UItick(GetUIContext(), 20000L);    /* Call UI service [20 ms events proc.] */
+    sFutureTm += OSC_CLK_INTERVAL;            /* Increment oscillator phase. */
+
+    hw_clear_bits(&timer_hw->intr, 1U<<TIMER_ALARM_NUM); /* Stop protection. */
+    timer_hw->alarm[TIMER_ALARM_NUM] = (uint32_t)sFutureTm;     /* Set next. */
 }
 
-void InitADC(void)
+/// @brief Inits the timer, the Pico's interrupt system.
+void InitISR(void)
 {
-    adc_init();
-    adc_gpio_init(ADC_PIN); /* Make sure GPIO is high-impedance,no pullups.*/
-    adc_select_input(ANALOG_RECEIVER_INPUT);/* Select ADC input 0 (GPIO26) */
-    adc_set_clkdiv(ADC_CLKDIV);                            /* Sample rate. */
+    hw_set_bits(&timer_hw->inte, 1U<<TIMER_ALARM_NUM);       /* Set tm. int. */
+    irq_set_exclusive_handler(TIMER_ALARM_IRQ, tmISR);
+    irq_set_priority(TIMER_ALARM_IRQ, 0x00);            /* highest priority. */
+    irq_set_enabled(TIMER_ALARM_IRQ, true);                   /* Enable ISR. */
 
-    adc_fifo_setup(true,      /* Write each conversion to the sample FIFO. */
-                   false,              /* Disable DMA data request (DREQ). */
-                   3,/* IRQ will be asserted when at least 3 smpl present. */
-                   false,            /* We won't see the ERR bit; disable. */
-                   false /* No shift each sample to 8 bits. Use full 12 b. */
-    );
-
-    irq_set_exclusive_handler(ADC_IRQ_FIFO, ADCrxISR);/* Only one handler. */
-    adc_irq_set_enabled(true);
-    irq_set_enabled(ADC_IRQ_FIFO, true);
-    irq_set_priority(ADC_IRQ_FIFO, PICO_DEFAULT_IRQ_PRIORITY);
-
-    //CB_Init(&gcbufADC, ADC_BUF_SIZE);   /* init ADC input circular buffer. */
-
-    adc_run(true);                     /* Enable free running sample mode. */
+    sFutureTm = timer_hw->timerawl + 500;        /* Postpone first ISR call. */
+    timer_hw->alarm[TIMER_ALARM_NUM] 
+                    = (uint32_t)sFutureTm;     /* Set first ISR launch time. */
 }

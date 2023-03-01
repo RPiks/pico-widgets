@@ -108,53 +108,28 @@ uint64_t GetTime(void)
     return ((uint64_t)kthi << 32) | ktlo;
 }
 
-void UItick(ui_context *pcntx, int32_t sleep_interval)
+void UItick(ui_context *pcntx)
 {
     ASSERT(pcntx);
     
-    static uint64_t sLastTm = 0;
-    const uint64_t ktm64_now = GetTime();
+    //static uint64_t sLastTm = 0;
+    //const uint64_t ktm64_now = GetTime();
     
     /* Check whether enough time has passed. */
-    if(ktm64_now - sleep_interval < sLastTm)
+    //if(ktm64_now - sleep_interval < sLastTm)
+    //{
+    //    return;
+    //}
+    //sLastTm = ktm64_now;
+
+    const bool kbnew_touch = GetTouchData(pcntx, &pcntx->mLastX, 
+                                          &pcntx->mLastY);
+    if(kbnew_touch)
     {
-        return;
-    }
-    sLastTm = ktm64_now;
-
-    frame *pfActive = GetActiveFrame(pcntx);
-    {
-        static frame *spfActiveM1 = NULL;
-        if(!pfActive)
-        {
-            return;
-        }
-
-        if(pfActive != spfActiveM1)
-        {
-            //DebugPrintf("%s\n", pfActive->mpTitle);
-            pfActive->mpfEventProc(pfActive, kEventDraw, 0, 0, pcntx);
-
-            sLastTm += 500000L;
-            spfActiveM1 = pfActive;
-            return;
-        }
-        spfActiveM1 = pfActive;
+        pcntx->mLastTouchTm = GetTime();
     }
 
-    int32_t x, y;
-    const bool kbnew_touch = GetTouchData(pcntx, &x, &y);
-    if(!kbnew_touch)
-    {
-        return;
-    }
-
-    if(pfActive->mpfEventProc)
-    {
-        IsInsideRect(&pfActive->mRegion, x, y)
-            ? pfActive->mpfEventProc(pfActive, kEventClickInside, x, y, pcntx)
-            : pfActive->mpfEventProc(pfActive, kEventClickOutside, x, y, pcntx);
-    }
+    TftFullScreenSelectiveWrite(&pcntx->mScreenCtl, 8);
 }
 
 /// @brief Gets data from touchscreen device.
@@ -166,16 +141,23 @@ bool GetTouchData(ui_context *puic, int32_t *x, int32_t *y)
 {
     ASSERT(puic);
 
-    if(0 == CheckTouch(&puic->mTouchCtl))
+    const int res = CheckTouch(&puic->mTouchCtl);
+    if(0 == res)
     {
         *x = (puic->mTouchCtl.mXf + 8) >> 4;
         *y = (puic->mTouchCtl.mYf + 8) >> 4;
 
         TouchTransformCoords(&puic->mTouchCalMat, x, y);
 
+        puic->mLastReleaseTm = 0;
+
         return true;
     }
-
+    else if(1 == res && !puic->mLastReleaseTm)
+    {
+        puic->mLastReleaseTm = GetTime();
+    }
+    
     return false;
 }
 

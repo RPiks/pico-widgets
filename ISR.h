@@ -45,21 +45,18 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 ///////////////////////////////////////////////////////////////////////////////
-#include "hardware/adc.h"
+#include "hardware/clocks.h"
 #include "pico/stdlib.h"
 
 #include <ui_context.h>
 #include <ui_protos.h>
 
-#define MHZ                     1000000L
-#define ADC_CLK_FREQ            (48 * MHZ)
-#define ADC_PIN                 26
-#define ANALOG_RECEIVER_INPUT   0
-#define ADC_SAMPLERATE          16000L
-#define ADC_CLKDIV              (ADC_CLK_FREQ / ADC_SAMPLERATE)
+#define kHZ                     1000L
+#define TIMER_HW_CLK_FREQ       (1000000L)
+#define TIMER_ALARM_NUM         0
+#define TIMER_ALARM_IRQ         TIMER_IRQ_0
+#define OSC_FREQ                (1 * kHZ)
+#define OSC_CLK_INTERVAL        (TIMER_HW_CLK_FREQ / OSC_FREQ)
 
-extern ui_context gUIcontext;
-
-void __not_in_flash_func (ADCrxISR)(void);
-
-void InitADC(void);
+void __not_in_flash_func (tmISR)(void);
+void InitISR(void);

@@ -1,3 +1,53 @@
+///////////////////////////////////////////////////////////////////////////////
+//
+//  Roman Piksaykin [piksaykin@gmail.com], R2BDY
+//  https://www.qrz.com/db/r2bdy
+//
+///////////////////////////////////////////////////////////////////////////////
+//
+//
+//  TerminalEventProc.c - Terminal widget functions.
+// 
+//
+//  DESCRIPTION
+//
+//      Implements the Terminal widget of pico-widgets UI library.
+//  The widget is a combo of rather basic stylus-activated keyboard & text
+//  window. It requires scarce RAM due to the fact that keyboard is hard-coded 
+//  in order to use with 240x320 TFT screen via pico-touchscr-sdk.
+//
+//  PLATFORM
+//      Hardware: Raspberry Pi Pico.
+//      Software: https://github.com/RPiks/pico-touchscr-sdk
+//
+//  REVISION HISTORY
+// 
+//      Rev 0.5   25 Feb 2023
+//  Initial release.
+//
+//  LICENCE
+//      MIT License (http://www.opensource.org/licenses/mit-license.php)
+//
+//  Copyright (c) 2023 by Roman Piksaykin
+//  
+//  Permission is hereby granted, free of charge,to any person obtaining a copy
+//  of this software and associated documentation files (the Software), to deal
+//  in the Software without restriction,including without limitation the rights
+//  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the Software is
+//  furnished to do so, subject to the following conditions:
+//
+//  The above copyright notice and this permission notice shall be included in
+//  all copies or substantial portions of the Software.
+//
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+//  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+//  LIABILITY,WHETHER IN AN ACTION OF CONTRACT,TORT OR OTHERWISE, ARISING FROM,
+//  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+//  THE SOFTWARE.
+///////////////////////////////////////////////////////////////////////////////
 #include <frame.h>
 #include <ui_context.h>
 #include <ui_protos.h>
@@ -11,6 +61,7 @@ typedef struct
     uint16_t y;
 } point2d_t;
 
+/// @brief Widget's context.
 typedef struct
 {
     uint8_t flags;
@@ -38,8 +89,8 @@ static const uint8_t skKeys[][4] =  {   {2, 0, 18, 16},     {22, 0, 38, 16},    
                                         {62, 80, 178, 98}   // Space
                                     };
 
-static const char skKeysCap[] = "1234567890-+QWERTYUIOPASDFGHJKL:\"^ZXCVBNM,./   ";
-static const char skKeysLow[] = "1234567890-+qwertyuiopasdfghjkl:\"^zxcvbnm,./   ";
+static const char skKeysCap[] = "1234567890-+QWERTYUIOPASDFGHJKL:\"^ZXCVBNM,./\x08\x0d ";
+static const char skKeysLow[] = "1234567890-+qwertyuiopasdfghjkl:\"^zxcvbnm,./\x08\x0d ";
 
 void KeyboardDraw(frame *pkbd, screen_control_t *pscr, 
                   color_t paper, color_t ink, int mode);
@@ -47,6 +98,13 @@ int LocateKeyTouch(int x, int y);
 void Key16x16Draw(screen_control_t *pscr, point2d_t tl);
 void BrickDraw(screen_control_t *pscr, point2d_t tl, point2d_t br, int over);
 
+/// @brief Event procssor of the Terminal widget.
+/// @param pF The widget.
+/// @param fE Incoming event type.
+/// @param x Touch X coord.
+/// @param y Touch Y coord.
+/// @param pctx User interface context.
+/// @return 0.
 int TerminalEventProc(frame *pF, frame_event fE, int x, int y, void *pctx)
 {
     ASSERT(pF);
@@ -55,8 +113,6 @@ int TerminalEventProc(frame *pF, frame_event fE, int x, int y, void *pctx)
     static terminal_context_t sTermCtx = { 0 };
 
     ui_context *pui = pctx;
-
-    //terminal_context_t *sTermCtx = pF->mpPayLoad;
 
     switch (fE)
     {
@@ -117,6 +173,13 @@ int TerminalEventProc(frame *pF, frame_event fE, int x, int y, void *pctx)
     return 0;
 }
 
+/// @brief Draws a keyboard.
+/// @param pkbd The widget.
+/// @param pscr Screen control structure.
+/// @param paper Paper color (background).
+/// @param ink Ink color (foreground).
+/// @param mode Defines which symbol set to display:
+/// @param mode mode=1 - capital letters, 0 - lowcase.
 void KeyboardDraw(frame *pkbd, screen_control_t *pscr, 
                   color_t paper, color_t ink, int mode)
 {
@@ -153,7 +216,7 @@ void KeyboardDraw(frame *pkbd, screen_control_t *pscr,
         for(int i = 0; i < 6; ++i)
         {
             CLR_DATA_BIT(pscr->mpPixBuffer, pt0.x + skCrook[i][0] 
-                        + (pt0.y + skCrook[i][1]) * PIX_WIDTH);
+                         + (pt0.y + skCrook[i][1]) * PIX_WIDTH);
         }
 
         pt0 = pt1;
@@ -164,14 +227,11 @@ void KeyboardDraw(frame *pkbd, screen_control_t *pscr,
     return;
 }
 
-void Key16x16Draw(screen_control_t *pscr, point2d_t tl)
-{
-    TftPutLine(pscr, tl.x + 3, tl.y, tl.x + 16 - 3, tl.y);              // TOP.
-    TftPutLine(pscr, tl.x + 3, tl.y + 16, tl.x + 16 - 3, tl.y + 16);    // BOT.
-    TftPutLine(pscr, tl.x, tl.y + 3, tl.x, tl.y + 16 - 3);              // LFT.
-    TftPutLine(pscr, tl.x + 16, tl.y + 3, tl.x + 16, tl.y + 16 - 3);    // RGT.
-}
-
+/// @brief Draws a common key as filled rectangle.
+/// @param pscr Screen control sutucture.
+/// @param tl Top-left point of the key (rect).
+/// @param br Bot-right point of the key (rect).
+/// @param over 1-positive drawing, 0-negative.
 void BrickDraw(screen_control_t *pscr, point2d_t tl, point2d_t br, int over)
 {
     for(int j = tl.y; j < br.y; ++j)
@@ -191,6 +251,10 @@ void BrickDraw(screen_control_t *pscr, point2d_t tl, point2d_t br, int over)
     }
 }
 
+/// @brief Touch coords to key index converter.
+/// @param x X coord of the touch.
+/// @param y Y coord of the touch.
+/// @return Index of key has been located. -1 if no.
 int LocateKeyTouch(int x, int y)
 {
     for(int i = 0; i < _countof(skKeys); ++i)

@@ -11,7 +11,7 @@
 //
 //  DESCRIPTION
 //
-//      Implements functions of UI init.
+//      Implements functions of pico-widgets init. This is an example of UI.
 //
 //  PLATFORM
 //      Hardware: Raspberry Pi Pico.
@@ -67,6 +67,8 @@ static const frame skUI[] =
     { kFrameBBox, "Terminal", {0, 32, 240, 320-32}, kBlack, kGreen, TerminalEventProc, NULL },  // [8]
 };
 
+/// @brief Inits UI - pushes a pair of standard frames onto the UI stack.
+/// @return UI context, updated.
 ui_context* InitUI(void)
 {
     PushStdFrame(&sUIcontext, 0);
@@ -75,17 +77,25 @@ ui_context* InitUI(void)
     return &sUIcontext;
 }
 
+/// @brief Obtains the ongoing UI context.
+/// @return UI context.
 ui_context* GetUIContext(void)
 {
     return &sUIcontext;
 }
 
+/// @brief Pushes a standard frame onto the UI stack.
+/// @param pcntx The UI context.
+/// @param ix Index of the library (ROM) frame.
 void PushStdFrame(ui_context *pcntx, int ix)
 {
     ASSERT(pcntx);
     pcntx->mpFrameStack[pcntx->mFrameActiveIX++] = &skUI[ix];
 }
 
+/// @brief Gets a ptr to nth UI item of hardcoded library (ROM).
+/// @param n Index of the item.
+/// @return Ptr to the frame.
 const frame* GetUIItem(int n)
 {
     return &skUI[n];
